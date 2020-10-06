@@ -15,7 +15,7 @@ namespace Examio.Models.Validators
             ErrorMessage = DefaultErrorMessageFormatString;
         }
 
-        private bool IsValueRequired(string checkValue, Object currentValue)
+        private bool IsValueRequired(string checkValue, object currentValue)
         {
             if (checkValue.Equals("!null", StringComparison.InvariantCultureIgnoreCase))
             {
@@ -25,9 +25,9 @@ namespace Examio.Models.Validators
             return checkValue.Equals(currentValue);
         }
 
-        protected override ValidationResult IsValid(Object value, ValidationContext context)
+        protected override ValidationResult IsValid(object value, ValidationContext context)
         {
-            Object instance = context.ObjectInstance;
+            object instance = context.ObjectInstance;
             Type type = instance.GetType();
             bool valueRequired = false;
 
@@ -35,7 +35,7 @@ namespace Examio.Models.Validators
             {
                 var fieldValue = s.Split(',').ToList().Select(k => k.Trim()).ToArray();
 
-                Object propertyValue = type.GetProperty(fieldValue[0]).GetValue(instance, null);
+                object propertyValue = type.GetProperty(fieldValue[0]).GetValue(instance, null);
 
                 valueRequired = IsValueRequired(fieldValue[1], propertyValue);
             }

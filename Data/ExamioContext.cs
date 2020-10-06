@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Examio.Models;
-using System.Security.Cryptography.X509Certificates;
 
 namespace Examio.Data
 {
@@ -11,7 +10,7 @@ namespace Examio.Data
         {
         }
 
-        public DbSet<ExamSession> ExamSession { get; set; }
+        public DbSet<ExamSession> ExamSessions { get; set; }
         public DbSet<ExamSite> ExamSites { get; set; }
     }
 }
