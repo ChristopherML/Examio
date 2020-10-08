@@ -7,22 +7,23 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Examio.Data;
 using Examio.Models;
+using Examio.Services;
 
 namespace Examio.Controllers
 {
     public class ExamSitesController : Controller
     {
-        private readonly ExamioContext _context;
+        private readonly IExamSiteService _examSiteService;
 
-        public ExamSitesController(ExamioContext context)
+        public ExamSitesController(IExamSiteService examSiteService)
         {
-            _context = context;
+            _examSiteService = examSiteService;
         }
 
         // GET: ExamSites
         public async Task<IActionResult> Index()
         {
-            return View(await _context.ExamSites.ToListAsync());
+            return View(await _examSiteService.ExamSiteSortedList());
         }
 
         // GET: ExamSites/Details/5
@@ -33,8 +34,7 @@ namespace Examio.Controllers
                 return NotFound();
             }
 
-            var examSite = await _context.ExamSites
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var examSite = _examSiteService.FindExamSiteById((int)id);
             if (examSite == null)
             {
                 return NotFound();
@@ -50,16 +50,13 @@ namespace Examio.Controllers
         }
 
         // POST: ExamSites/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Code,Name")] ExamSite examSite)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(examSite);
-                await _context.SaveChangesAsync();
+                await _examSiteService.SaveExamSite(examSite);
                 return RedirectToAction(nameof(Index));
             }
             return View(examSite);
@@ -73,7 +70,7 @@ namespace Examio.Controllers
                 return NotFound();
             }
 
-            var examSite = await _context.ExamSites.FindAsync(id);
+            var examSite = await _examSiteService.FindExamSiteById((int)id);
             if (examSite == null)
             {
                 return NotFound();
@@ -95,23 +92,16 @@ namespace Examio.Controllers
 
             if (ModelState.IsValid)
             {
-                try
+                
+                if (await _examSiteService.UpdateExamSite(examSite))
                 {
-                    _context.Update(examSite);
-                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
-                catch (DbUpdateConcurrencyException)
+                else
                 {
-                    if (!ExamSiteExists(examSite.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    return NotFound();
                 }
-                return RedirectToAction(nameof(Index));
+
             }
             return View(examSite);
         }
@@ -124,8 +114,8 @@ namespace Examio.Controllers
                 return NotFound();
             }
 
-            var examSite = await _context.ExamSites
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var examSite = await _examSiteService.FindExamSiteById((int)id);
+
             if (examSite == null)
             {
                 return NotFound();
@@ -139,15 +129,8 @@ namespace Examio.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var examSite = await _context.ExamSites.FindAsync(id);
-            _context.ExamSites.Remove(examSite);
-            await _context.SaveChangesAsync();
+            await _examSiteService.DeleteExamSite(id);
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool ExamSiteExists(int id)
-        {
-            return _context.ExamSites.Any(e => e.Id == id);
         }
     }
 }

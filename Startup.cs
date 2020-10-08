@@ -13,6 +13,7 @@ using Examio.Data;
 using AutoMapper;
 using Examio.Controllers;
 using Examio.Models.Services;
+using Examio.Services;
 
 namespace Examio
 {
@@ -30,6 +31,7 @@ namespace Examio
         {
             services.AddControllersWithViews();
             services.AddTransient<IExamSessionService, ExamSessionService>();
+            services.AddTransient<IExamSiteService, ExamSiteService>();
             services.AddDbContext<ExamioContext>(opt =>
                 opt.UseSqlite(Configuration.GetConnectionString("ExamioContext")));
         }

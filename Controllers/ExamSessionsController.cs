@@ -95,17 +95,17 @@ namespace Examio.Controllers
             }
 
             if (ModelState.IsValid)
-            {
-                var success = await _examSessionService.UpdateExamSession(examSessionDto);
+            { 
 
-                if (!success) 
+                if (await _examSessionService.UpdateExamSession(examSessionDto))
+                {
+                    return RedirectToAction(nameof(Index));
+                }
+                else 
                 {
                     return NotFound();
                 }
-
-                return RedirectToAction(nameof(Index));
             }
-
             return View(await _examSessionService.ReturnPopulatedExamSessionFormDto(examSessionDto));
         }
 
