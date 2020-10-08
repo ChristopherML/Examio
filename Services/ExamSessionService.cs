@@ -142,14 +142,13 @@ namespace Examio.Models.Services
             var examsSessions = from e in _context.ExamSessions 
                                 select e;
 
-            //if (!string.IsNullOrEmpty(search.Name))
-            //{
-            //    examsSessions = examsSessions.Where(s => s.Name.Contains(search.Name));
-            //}
+            
             examsSessions = examsSessions.Where(e =>
                 (string.IsNullOrEmpty(search.Name) || e.Name.Contains(search.Name)) &&
                 (search.StartDate == null || (e.StartDate > search.StartDate)) &&
                 (search.EndDate == null || (e.EndDate < search.EndDate)));
+
+            examsSessions = examsSessions.OrderBy(e => e.Name.ToLower());
 
             return await examsSessions.Include(e => e.ExamSite).ToListAsync();
         }
