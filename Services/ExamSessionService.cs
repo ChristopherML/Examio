@@ -3,6 +3,7 @@ using Examio.Data;
 using Examio.Dto;
 using Examio.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -139,18 +140,20 @@ namespace Examio.Models.Services
         private async Task<List<ExamSession>> Search(
             ExamSessionSearchFilterDto search)
         {
-            var examsSessions = from e in _context.ExamSessions 
+            var examSessions = from e in _context.ExamSessions 
+                                select e;
+            var examSites = from e in _context.ExamSessions
                                 select e;
 
-            
-            examsSessions = examsSessions.Where(e =>
-                (string.IsNullOrEmpty(search.Name) || e.Name.Contains(search.Name)) &&
-                (search.StartDate == null || (e.StartDate > search.StartDate)) &&
-                (search.EndDate == null || (e.EndDate < search.EndDate)));
+            examSessions = examSessions.Where(e =>
+            (string.IsNullOrEmpty(search.Name) || e.Name.Contains(search.Name)) &&
+            (search.StartDate == null || (e.StartDate > search.StartDate)) &&
+            (search.EndDate == null || (e.EndDate < search.EndDate)) &&
+            (string.IsNullOrEmpty(search.ExamSiteName) || e.ExamSite.Name.Contains(search.ExamSiteName)));
 
-            examsSessions = examsSessions.OrderBy(e => e.Name.ToLower());
+            examSessions = examSessions.OrderBy(e => e.Name.ToLower());
 
-            return await examsSessions.Include(e => e.ExamSite).ToListAsync();
+            return await examSessions.Include(e => e.ExamSite).ToListAsync();
         }
 
         public async Task<ExamSessionAllOrSearchedListVM> ExamSessionsAllOrSearchedListVM(ExamSessionSearchFilterDto search)

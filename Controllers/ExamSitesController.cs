@@ -34,7 +34,7 @@ namespace Examio.Controllers
                 return NotFound();
             }
 
-            var examSite = _examSiteService.FindExamSiteById((int)id);
+            var examSite = await _examSiteService.FindExamSiteById((int)id);
             if (examSite == null)
             {
                 return NotFound();

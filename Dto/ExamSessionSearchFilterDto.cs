@@ -11,7 +11,7 @@ namespace Examio.Dto
 
         public DateTime? EndDate { get; set; }
 
-        public int ExamSiteId { get; set; }
+        public string ExamSiteName { get; set; }
 
     }
 }

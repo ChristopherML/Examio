@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+using static Examio.Validators.ExamSessionValidator;
 
 namespace Examio.Dto
 {
@@ -18,10 +16,12 @@ namespace Examio.Dto
 
         [DataType(DataType.DateTime)]
         [Display(Name = "Start Date")]
+        [EndStartPairingRequired]
         public DateTime? StartDate { get; set; }
 
         [DataType(DataType.DateTime)]
         [Display(Name = "End Date")]
+        [EndStartPairingRequired]
         public DateTime? EndDate { get; set; }
 
         [Required]
