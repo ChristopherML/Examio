@@ -11,6 +11,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Examio.Data;
 using AutoMapper;
+using Examio.Controllers;
+using Examio.Models.Services;
 
 namespace Examio
 {
@@ -27,6 +29,7 @@ namespace Examio
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+            services.AddTransient<IExamSessionService, ExamSessionService>();
             services.AddDbContext<ExamioContext>(opt =>
                 opt.UseSqlite(Configuration.GetConnectionString("ExamioContext")));
         }

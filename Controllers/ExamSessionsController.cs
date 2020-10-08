@@ -1,29 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Examio.Dto;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Examio.Data;
-using Examio.Models;
-using Examio.ViewModels;
+using System.Threading.Tasks;
 
 namespace Examio.Controllers
 {
     public class ExamSessionsController : Controller
     {
-        private readonly ExamioContext _context;
+        private readonly IExamSessionService _examSessionService;
 
-        public ExamSessionsController(ExamioContext context)
+        public ExamSessionsController(IExamSessionService examSessionService)
         {
-            _context = context;
+            _examSessionService = examSessionService;
         }
 
         // GET: ExamSessions
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(ExamSessionSearchFilterDto search)
         {
-            return View(await _context.ExamSessions.ToListAsync());
+            return View(await _examSessionService
+                .ExamSessionsAllOrSearchedListVM(search));
         }
 
         // GET: ExamSessions/Details/5
@@ -34,59 +28,44 @@ namespace Examio.Controllers
                 return NotFound();
             }
 
-            var examSession = await _context.ExamSessions
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (examSession == null)
+            var examSessionEager = await _examSessionService.FindExamSessionById((int)id);
+           
+            if (examSessionEager == null)
             {
                 return NotFound();
             }
-
-            return View(examSession);
+            
+            return View(examSessionEager);
         }
 
         // GET: ExamSessions/Create
         public async Task<IActionResult> Create()
         {
-            var examSites = await _context.ExamSites.ToListAsync();
-            var examSessionFormDisplay = new ExamSessionFormVM
-            {
-                ExamSites = examSites
-            };
-
-            return View(examSessionFormDisplay);
-        }
-
-        // POST: ExamSessions/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> 
-            Create([Bind("Id,Name,Description,StartDate,EndDate,ExamSiteId")] ExamSessionFormVM examSessionFormVM)
-        {
-            var examSite = await _context.ExamSites.FirstOrDefaultAsync(e=> e.Id == examSessionFormVM.ExamSiteId);
-
-            if (ModelState.IsValid && examSite != null)
-            {
-                var examSession = new ExamSession
-                {
-                    Id = examSessionFormVM.Id,
-                    Description = examSessionFormVM.Description,
-                    Name = examSessionFormVM.Name,
-                    EndDate = examSessionFormVM.EndDate,
-                    StartDate = examSessionFormVM.StartDate,
-                    ExamSite = examSite
-                };
-
-                _context.Add(examSession);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
+            var examSessionFormVM = await _examSessionService.ReturnBlankExamSessionForm();
 
             return View(examSessionFormVM);
         }
 
-        // GET: ExamSessions/Edit/5
+        // POST: ExamSessions/Create
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> 
+            Create([Bind("Id,Name,Description,StartDate,EndDate,ExamSiteId")] ExamSessionDto examSessionDto)
+        {
+
+            if (ModelState.IsValid)
+            {
+                _examSessionService.SaveNewExamSession(examSessionDto);
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            //TODO Toast Notification: Update Failed
+
+            return View(await _examSessionService.ReturnPopulatedExamSessionFormDto(examSessionDto));
+        }
+
+        // GET: ExamSessions/Edit/5 
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -94,47 +73,40 @@ namespace Examio.Controllers
                 return NotFound();
             }
 
-            var examSession = await _context.ExamSessions.FindAsync(id);
+            var examSession = await _examSessionService.FindExamSessionById((int)id);
+
             if (examSession == null)
             {
                 return NotFound();
-            }
-            return View(examSession);
+            }            
+
+            return View(await _examSessionService.ReturnPopulatedExamSessionForm(examSession));
         }
 
         // POST: ExamSessions/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,StartDate,EndDate")] ExamSession examSession)
+        public async Task<IActionResult> 
+            Edit(int id, [Bind("Id,Name,Description,StartDate,EndDate,ExamSiteId")] ExamSessionDto examSessionDto)
         {
-            if (id != examSession.Id)
+            if (id != examSessionDto.Id)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
-                try
+                var success = await _examSessionService.UpdateExamSession(examSessionDto);
+
+                if (!success) 
                 {
-                    _context.Update(examSession);
-                    await _context.SaveChangesAsync();
+                    return NotFound();
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ExamSessionExists(examSession.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+
                 return RedirectToAction(nameof(Index));
             }
-            return View(examSession);
+
+            return View(await _examSessionService.ReturnPopulatedExamSessionFormDto(examSessionDto));
         }
 
         // GET: ExamSessions/Delete/5
@@ -144,9 +116,9 @@ namespace Examio.Controllers
             {
                 return NotFound();
             }
+            
+            var examSession = await _examSessionService.FindExamSessionById((int)id);
 
-            var examSession = await _context.ExamSessions
-                .FirstOrDefaultAsync(m => m.Id == id);
             if (examSession == null)
             {
                 return NotFound();
@@ -160,15 +132,9 @@ namespace Examio.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var examSession = await _context.ExamSessions.FindAsync(id);
-            _context.ExamSessions.Remove(examSession);
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
+            await _examSessionService.DeleteExamSessionById(id);
 
-        private bool ExamSessionExists(int id)
-        {
-            return _context.ExamSessions.Any(e => e.Id == id);
+            return RedirectToAction(nameof(Index));
         }
     }
 }

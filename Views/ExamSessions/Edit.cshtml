@@ -1,37 +1,42 @@
-﻿@model Examio.Models.ExamSession
+﻿@model Examio.ViewModels.ExamSessionFormVM
 
 @{
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+<h1>Exam Sites</h1>
 
-<h4>ExamSession</h4>
+<h4>Edit</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="ExamSessionDto.Id" />
             <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+                <label asp-for="ExamSessionDto.Name" class="control-label"></label>
+                <input asp-for="ExamSessionDto.Name" class="form-control" />
+                <span asp-validation-for="ExamSessionDto.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
+                <label asp-for="ExamSessionDto.Description" class="control-label"></label>
+                <input asp-for="ExamSessionDto.Description" class="form-control" />
+                <span asp-validation-for="ExamSessionDto.Description" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="StartDate" class="control-label"></label>
-                <input asp-for="StartDate" class="form-control" />
-                <span asp-validation-for="StartDate" class="text-danger"></span>
+                <label asp-for="ExamSessionDto.StartDate" class="control-label"></label>
+                <input asp-for="ExamSessionDto.StartDate" class="form-control" />
+                <span asp-validation-for="ExamSessionDto.StartDate" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="EndDate" class="control-label"></label>
-                <input asp-for="EndDate" class="form-control" />
-                <span asp-validation-for="EndDate" class="text-danger"></span>
+                <label asp-for="ExamSessionDto.EndDate" class="control-label"></label>
+                <input asp-for="ExamSessionDto.EndDate" class="form-control" />
+                <span asp-validation-for="ExamSessionDto.EndDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.ExamSessionDto.ExamSiteId)
+                @Html.DropDownListFor(m => m.ExamSessionDto.ExamSiteId, new SelectList(Model.ExamSites, "Id", "Name"), "Select Exam Site", new { @class = "form-control" })
+                <span asp-validation-for="ExamSessionDto.ExamSiteId" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

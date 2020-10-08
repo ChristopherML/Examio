@@ -1,10 +1,12 @@
-﻿using Examio.Models.Validators;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace Examio.Models
+namespace Examio.Dto
 {
-    public class ExamSession
+    public class ExamSessionDto
     {
         [Required]
         public int Id { get; set; }
@@ -22,7 +24,9 @@ namespace Examio.Models
         [Display(Name = "End Date")]
         public DateTime? EndDate { get; set; }
 
-        [Required]  
-        public ExamSite ExamSite { get; set; }
+        [Required]
+        [Display(Name = "Exam Site")]
+        public int ExamSiteId { get; set; }
+
     }
 }
